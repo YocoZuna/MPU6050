@@ -22,7 +22,8 @@
 #include "usart.h"
 #include "gpio.h"
 #include "MPU6050.h"
-
+#include <stdio.h>
+#include <stdint.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -57,6 +58,8 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+
 /* USER CODE END 0 */
 
 /**
@@ -66,7 +69,12 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  MPU6050_Config_TypeDef mpu6050;
+  mpu6050.ACC_RANGE = MPU6050_ACC_AFS_2G;
+  mpu6050.CLOCK = MPU6050_CLOCK_SOURCE_0;
+  mpu6050.FILTER = MPU6050_LOW_PASS_FILTER_0;
+  mpu6050.GYRO_RANGE = MPU6050_GYRO_FS_250;
+  mpu6050.TEMP_ON_OFF = ENABLE;
 
   /* USER CODE END 1 */
 
@@ -91,7 +99,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  MPU6050_Init(&hi2c1, &mpu6050);
+  float AccBuff[3];
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -99,6 +108,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  MPU6050_Get_Acc_Value(&hi2c1, &mpu6050, AccBuff);
+
+	  printf("Acc values X:%.2f  Y:%.2f  Z:%.2f",AccBuff[0],AccBuff[1],AccBuff[2]);
 
     /* USER CODE BEGIN 3 */
   }
