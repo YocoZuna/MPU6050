@@ -13,11 +13,11 @@
 
 
 static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,float* gyroBuff);
-static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,float* acc);
+static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* acc);
 
 void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
-void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue);
+void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue);
 void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
 void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* tempr);
 /** @ MPU6050_Init
@@ -51,7 +51,7 @@ void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu60
 		MPU6050_Interrupt_Config_Typdef Interrupt_Config;
 
 	}MPU6050_Config_TypeDef;
-	  *
+  *
   */
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 {
@@ -62,7 +62,8 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 	if (temp == 0x68)
 	{
 		/* Restart of the device */
-		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_POWER_MANAGMENT_1, 1,(uint8_t*) MPU6050_DEVICE_RESET, 1, 1000);
+		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_POWER_MANAGMENT_1, 1,0x00, 1, 1000);
+
 		HAL_Delay(100);
 		/* Initialization of clock and tempr sensor */
 		if (mpu6050->TEMP_ON_OFF == DISABLE)
@@ -113,9 +114,9 @@ static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,float* gyroBuff)
 	uint8_t temp[6];
 	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_GYRO_MEAS, 1, temp, 6, 1000);
 
-	gyroBuff[0] = (int16_t) (temp[1]<<8) | temp[0];
-	gyroBuff[1] = (int16_t) (temp[3]<<8) | temp[1];
-	gyroBuff[2] = (int16_t) (temp[5]<<8) | temp[4];
+	gyroBuff[0] = (int16_t) (temp[0]<<8) | temp[1];
+	gyroBuff[1] = (int16_t) (temp[2]<<8) | temp[3];
+	gyroBuff[2] = (int16_t) (temp[4]<<8) | temp[5];
 
 }
 
@@ -133,15 +134,15 @@ static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,float* gyroBuff)
   * where [0] = X axis, [1] = Y axis, [2] = Z axis
   * @retval None
   */
-static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,float* accBuff)
+static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* accBuff)
 {
 
 	uint8_t temp[6];
 	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, temp, 6, 1000);
 
-	accBuff[0] = (int16_t) (temp[1]<<8) | temp[0];
-	accBuff[1] = (int16_t) (temp[3]<<8) | temp[1];
-	accBuff[2] = (int16_t) (temp[5]<<8) | temp[4];
+	accBuff[0] = (int16_t) (temp[0]<<8) | temp[1];
+	accBuff[1] = (int16_t) (temp[2]<<8) | temp[3];
+	accBuff[2] = (int16_t) (temp[4]<<8) | temp[5];
 
 }
 
@@ -168,15 +169,16 @@ void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr)
 
 }
 
-void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue)
+void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue)
 {
-	float accBuff[3];
+	int16_t accBuff[3];
 	assert_param(sizeof(accvalue)==12);
 	MPU6050_Get_Acc_RAW(I2C, accBuff);
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_2G)
 		for ( int i=0;i<3;i++)
 		{
 			accvalue[i]  = accBuff[i]/16384;
+
 		}
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_4G)
 		for ( int i=0;i<3;i++)

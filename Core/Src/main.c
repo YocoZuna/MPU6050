@@ -51,6 +51,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+extern void initialise_monitor_handles(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -82,7 +83,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
+  initialise_monitor_handles();
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -100,7 +101,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   MPU6050_Init(&hi2c1, &mpu6050);
-  float AccBuff[3];
+  int16_t AccBuff[3];
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,9 +110,9 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  MPU6050_Get_Acc_Value(&hi2c1, &mpu6050, AccBuff);
-
-	  printf("Acc values X:%.2f  Y:%.2f  Z:%.2f",AccBuff[0],AccBuff[1],AccBuff[2]);
-
+	  //HAL_I2C_Mem_Read(&hi2c1, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, AccBuff, 1, HAL_MAX_DELAY);
+	  printf("Acc values X:%d  Y:%d  Z:%d\n",AccBuff[0],AccBuff[1],AccBuff[2]);
+	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
