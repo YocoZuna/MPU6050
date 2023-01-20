@@ -24,6 +24,7 @@
 #include "MPU6050.h"
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -103,15 +104,17 @@ int main(void)
   MPU6050_Init(&hi2c1, &mpu6050);
   int16_t AccBuff[3];
   /* USER CODE END 2 */
+  float* B=0;
+  float* A=0;
+  float* Y=0;
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-	  MPU6050_Get_Acc_Value(&hi2c1, &mpu6050, AccBuff);
-	  //HAL_I2C_Mem_Read(&hi2c1, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, AccBuff, 1, HAL_MAX_DELAY);
-	  printf("Acc values X:%d  Y:%d  Z:%d\n",AccBuff[0],AccBuff[1],AccBuff[2]);
+
+
 	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }

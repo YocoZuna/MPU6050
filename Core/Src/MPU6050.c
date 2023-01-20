@@ -8,17 +8,17 @@
 #include "i2c.h"
 #include <stdint.h>
 #include "MPU6050.h"
+#include "math.h"
 
 
 
-
-static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,float* gyroBuff);
+static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff);
 static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* acc);
 
 void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
 void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue);
-void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
+void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue);
 void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* tempr);
 /** @ MPU6050_Init
   * @{
@@ -197,7 +197,7 @@ void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu605
 		}
 
 }
-void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue)
+void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue)
 {
 	float gyroBuff[3];
 	assert_param(sizeof(gyrovalue)==12);
@@ -225,4 +225,19 @@ void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu60
 
 }
 
+void Get_Roll_Pitch_Yaw(I2C_HandleTypeDef*,int16_t* rollPitchYaw,int16_t* gyrovalue)
+{
+	int16_t roll,pitch,yaw;
+
+	rollPitchYaw[0] = gyrovalue[0]; //X
+	rollPitchYaw[1] = gyrovalue[1]; //Y
+	rollPitchYaw[2] = gyrovalue[2]; //Z
+
+	roll = atan2(gyrovalue[1],gyrovalue[2])*180/3.14;
+	pitch = atan2(gyrovalue[0],sqrt((gyrovalue[1]^2)+(gyrovalue[2]^2)))*180/3.14;
+
+	rollPitchYaw[0] = roll; //X
+	rollPitchYaw[1] = pitch; //Y
+
+}
 
