@@ -8,7 +8,7 @@
 #include "i2c.h"
 #include <stdint.h>
 #include "MPU6050.h"
-#include "math.h"
+#include <math.h>
 
 
 
@@ -108,7 +108,7 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
   * where [0] = X axis, [1] = Y axis, [2] = Z axis
   * @retval None
   */
-static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,float* gyroBuff)
+static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff)
 {
 
 	uint8_t temp[6];
@@ -225,19 +225,13 @@ void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu60
 
 }
 
-void Get_Roll_Pitch_Yaw(I2C_HandleTypeDef*,int16_t* rollPitchYaw,int16_t* gyrovalue)
+void MPU6050_Get_Roll_Pitch(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue,int16_t* rollpitch)
 {
-	int16_t roll,pitch,yaw;
+	int16_t roll = atan(accvalue[1]/accvalue[2]);
+	int16_t pitch = atan((-accvalue[0])/sqrt((accvalue[1]^2)+(accvalue[2]^2)));
 
-	rollPitchYaw[0] = gyrovalue[0]; //X
-	rollPitchYaw[1] = gyrovalue[1]; //Y
-	rollPitchYaw[2] = gyrovalue[2]; //Z
-
-	roll = atan2(gyrovalue[1],gyrovalue[2])*180/3.14;
-	pitch = atan2(gyrovalue[0],sqrt((gyrovalue[1]^2)+(gyrovalue[2]^2)))*180/3.14;
-
-	rollPitchYaw[0] = roll; //X
-	rollPitchYaw[1] = pitch; //Y
+	rollpitch[0] = roll;
+	rollpitch[1] = pitch;
 
 }
 

@@ -181,7 +181,7 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
 void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue);
 void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue);
 void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* tempr);
-
+void Get_Roll_Pitch_Yaw(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* rollPitchYaw,int16_t* gyrovalue);
 
 
 

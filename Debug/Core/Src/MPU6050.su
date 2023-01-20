@@ -4,3 +4,4 @@
 ../Core/Src/MPU6050.c:162:6:MPU6050_Get_Temp	40	static
 ../Core/Src/MPU6050.c:172:6:MPU6050_Get_Acc_Value	48	static
 ../Core/Src/MPU6050.c:200:6:MPU6050_Get_Gyro_Value	64	static
+../Core/Src/MPU6050.c:228:6:MPU6050_Get_Roll_Pitch	40	static
