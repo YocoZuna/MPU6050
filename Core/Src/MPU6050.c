@@ -5,21 +5,21 @@
  *      Author: Dawid Zadlo
  */
 
+#include <MPU6050.h>
 #include "i2c.h"
 #include <stdint.h>
-#include "MPU6050.h"
-#include <math.h>
+
 
 
 
 static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff);
 static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* acc);
 
-void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr);
+static void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,int16_t * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
-void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue);
-void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue);
-void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* tempr);
+void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue);
+void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
+void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,float* tempr);
 /** @ MPU6050_Init
   * @{
   */
@@ -51,7 +51,7 @@ void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu60
 		MPU6050_Interrupt_Config_Typdef Interrupt_Config;
 
 	}MPU6050_Config_TypeDef;
-  *
+	  *
   */
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 {
@@ -63,7 +63,6 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 	{
 		/* Restart of the device */
 		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_POWER_MANAGMENT_1, 1,0x00, 1, 1000);
-
 		HAL_Delay(100);
 		/* Initialization of clock and tempr sensor */
 		if (mpu6050->TEMP_ON_OFF == DISABLE)
@@ -159,47 +158,48 @@ static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* accBuff)
   * int16_t* tempr -> pointer to temperature variable
   * @retval None
   */
-void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr)
+void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,int16_t* tempr)
 {
 
 	uint8_t temp[2];
-	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_TEMP, 1, temp, 2, 1000);
-
-	*tempr = (int16_t) (temp[1]<<8) | temp[0];
-
+	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_TEMP, 1, temp, 2, HAL_MAX_DELAY);
+	int16_t tempv = 0;
+	tempv = (int16_t) (temp[0]<<8) | temp[1];
+	*tempr  = (tempv/340)+36.53;
 }
 
-void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue)
+void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue)
 {
 	int16_t accBuff[3];
-	assert_param(sizeof(accvalue)==12);
+	//assert_param(sizeof(accvalue)==12);
 	MPU6050_Get_Acc_RAW(I2C, accBuff);
+
+
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_2G)
 		for ( int i=0;i<3;i++)
 		{
-			accvalue[i]  = accBuff[i]/16384;
-
+			accvalue[i]  = (float)accBuff[i]/(float)16384;
 		}
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_4G)
 		for ( int i=0;i<3;i++)
 		{
-			accvalue[i]  = accBuff[i]/8192;
+			accvalue[i]  = (float)accBuff[i]/(float)8192;
 		}
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_8G)
 		for ( int i=0;i<3;i++)
 		{
-			accvalue[i]  = accBuff[i]/4096;
+			accvalue[i]  = (float)accBuff[i]/(float)4096;
 		}
 	if (mpu6050->ACC_RANGE == MPU6050_ACC_AFS_16G)
 		for ( int i=0;i<3;i++)
 		{
-			accvalue[i]  = accBuff[i]/2048;
+			accvalue[i]  = (float)accBuff[i]/(float)2048;
 		}
 
 }
-void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue)
+void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue)
 {
-	float gyroBuff[3];
+	int16_t gyroBuff[3];
 	assert_param(sizeof(gyrovalue)==12);
 	MPU6050_Get_Gyro_RAW(I2C, gyroBuff);
 	if (mpu6050->GYRO_RANGE == MPU6050_GYRO_FS_250)
@@ -225,13 +225,4 @@ void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu60
 
 }
 
-void MPU6050_Get_Roll_Pitch(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue,int16_t* rollpitch)
-{
-	int16_t roll = atan(accvalue[1]/accvalue[2]);
-	int16_t pitch = atan((-accvalue[0])/sqrt((accvalue[1]^2)+(accvalue[2]^2)));
-
-	rollpitch[0] = roll;
-	rollpitch[1] = pitch;
-
-}
 

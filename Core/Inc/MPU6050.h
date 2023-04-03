@@ -6,9 +6,10 @@
  */
 
 
-#ifndef INC_MPU6050_H_
-#define INC_MPU6050_H_
+#ifndef INC_MPU6050_H
+#define INC_MPU6050_H
 #include <stdio.h>
+#include "i2c.h"
 /*
  *  Default connection of pin AD0 is pulling it to GND otherwise you have do define AD0_1 which means this pin is pulled HIGH
  */
@@ -173,15 +174,14 @@ typedef struct
 #define MPU6050_INTERRUPT_CLEAR_ON_READ_STATUS		  0//Reset value
 #define MPU6050_INTERRUPT_CONFIG					(0x38U) //Size 1
 #define MPU6050_INTERRUPT_STATUS					(0x3AU) //Size 1
+#define MPU6050_DATA_SENSORS_READY					(1<<0)
 
 
 
-void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,float * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
-void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* accvalue);
-void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* gyrovalue);
-void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* tempr);
-void Get_Roll_Pitch_Yaw(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,int16_t* rollPitchYaw,int16_t* gyrovalue);
+void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue);
+void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
+void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,float* tempr);
 
 
 
@@ -201,5 +201,4 @@ void Get_Roll_Pitch_Yaw(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,i
 
 
 
-
-#endif /* INC_MPU6050_H_ */
+#endif
