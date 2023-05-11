@@ -12,14 +12,14 @@
 
 
 
-static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff);
-static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* acc);
+void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff);
+void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* acc);
 
-static void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,int16_t * tempr);
+void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,int16_t * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
 void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue);
 void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
-void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,float* tempr);
+void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,int16_t* tempr);
 /** @ MPU6050_Init
   * @{
   */
@@ -107,7 +107,7 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
   * where [0] = X axis, [1] = Y axis, [2] = Z axis
   * @retval None
   */
-static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff)
+void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff)
 {
 
 	uint8_t temp[6];
@@ -133,10 +133,10 @@ static void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff)
   * where [0] = X axis, [1] = Y axis, [2] = Z axis
   * @retval None
   */
-static void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* accBuff)
+void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C, int16_t* accBuff)
 {
 
-	uint8_t temp[6];
+	uint8_t  temp[6];
 	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, temp, 6, 1000);
 
 	accBuff[0] = (int16_t) (temp[0]<<8) | temp[1];
@@ -200,7 +200,7 @@ void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu605
 void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue)
 {
 	int16_t gyroBuff[3];
-	assert_param(sizeof(gyrovalue)==12);
+	//assert_param(sizeof(gyrovalue)==12);
 	MPU6050_Get_Gyro_RAW(I2C, gyroBuff);
 	if (mpu6050->GYRO_RANGE == MPU6050_GYRO_FS_250)
 		for ( int i=0;i<3;i++)

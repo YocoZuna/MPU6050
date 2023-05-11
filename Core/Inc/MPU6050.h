@@ -21,7 +21,7 @@
 
 
 #ifdef AD0_1
-#define MPU6050_DEV_ADDRES (0x69<<1)
+#define MPU6050_DEV_ADDRESS (0x69<<1)
 #else
 #define MPU6050_DEV_ADDRESS (0x68<<1)
 #endif
@@ -177,13 +177,13 @@ typedef struct
 #define MPU6050_DATA_SENSORS_READY					(1<<0)
 
 
-
+void MPU6050_Get_Temp(I2C_HandleTypeDef* I2C,int16_t * tempr);
 void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050);
 void MPU6050_Get_Acc_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* accvalue);
 void MPU6050_Get_Gyro_Value(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050,float* gyrovalue);
-void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,float* tempr);
-
-
+void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,int16_t* tempr);
+void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C,int16_t* accBuff);
+void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff);
 
 
 
