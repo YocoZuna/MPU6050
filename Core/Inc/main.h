@@ -63,7 +63,9 @@ void Error_Handler(void);
 #define MPU6050_Interrupt_GPIO_Port GPIOC
 #define MPU6050_Interrupt_EXTI_IRQn EXTI1_IRQn
 #define USART_TX_Pin GPIO_PIN_2
-#define USART_TX_GPIO_Port GPIOA
+#define USART_TX_GPIO_Port GPIOA85
+
+
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5

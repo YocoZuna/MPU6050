@@ -1,0 +1,2 @@
+../Core/Src/ASC711EX.c:11:6:ACS711EX_Convert_To_mA	24	static
+../Core/Src/ASC711EX.c:25:8:ACS711EX_Calib	24	static

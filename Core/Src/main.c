@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "dma.h"
 #include "i2c.h"
 #include "tim.h"
@@ -27,7 +28,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "MPU6050.h"
-#include "string.h"
+#include <string.h>
+#include <stdio.h>
+#include "ACS711EX.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +62,13 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+uint16_t bufforADC[3];
+uint16_t bufforCalib[3];
 
+char buffor[70];
+char bufforStartStop[1];
+volatile uint8_t cmplt = 1;
+volatile uint8_t xD = 0;
 
 /* USER CODE END 0 */
 
@@ -67,16 +76,30 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-MPU6050_Config_TypeDef mpu6050;
-volatile uint8_t cmplt=0;
-char buffor[60];
-float accBuffor[3],gyroBuffor[3],ax,ay,az,gx,gy,gz;
-char bufforsdsd[10];
-
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	MPU6050_Config_TypeDef mpu6050;volatile int SAMPLE = 0 ;
+	float accBuffor[3],gyroBuffor[3];uint16_t bufforADC[3];float bufforADCOUput[3];
+	//char buffor[100];
+	struct Data {
 
+
+			 int sample;
+
+			 float ax;
+			 float ay;
+			 float az;
+			 float gx;
+			 float gy;
+			 float gz;
+			 float  phasea;
+			 float phaseb;
+			 float phasec;
+
+
+
+	};
 
 
   /* USER CODE END 1 */
@@ -109,25 +132,70 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   MX_TIM3_Init();
+  MX_ADC1_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(15);
   MPU6050_Init(&hi2c1, &mpu6050);
-  HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforsdsd, 1);
-  volatile uint32_t sample = 0 ;
+
+  HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforStartStop, 1);
+
+  //HAL_TIM_Base_Start_IT(&htim3);
+
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)bufforCalib, 3);
+  HAL_Delay(1);
+
+  HAL_TIM_Base_Start_IT(&htim10);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
 
-    while(!cmplt);
-    cmplt = 0;
-    sample +=1;
+
+
+
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)bufforADC, 3);
+    SAMPLE +=1;
     MPU6050_Get_Acc_Value(&hi2c1,&mpu6050,accBuffor);
 	MPU6050_Get_Gyro_Value(&hi2c1,&mpu6050,gyroBuffor);
-	ax=accBuffor[0];ay=accBuffor[1];az=accBuffor[2];gx=gyroBuffor[0];gy=gyroBuffor[1];gz=gyroBuffor[2];
-	sprintf(buffor,"%ld,%0.5f,%0.5f,%0.5f,%0.5f,%0.5f,%0.5f\n",sample,ax,ay,az,gx,gy,gz);
-	HAL_UART_Transmit_DMA(&huart2, (uint8_t*)buffor, strlen(buffor));
+
+
+	ACS711EX_Convert_To_mA(bufforADC, bufforADCOUput);
+
+//	struct Data  DataToSend = {
+//
+//
+//
+//			.sample = SAMPLE,
+//
+//			.ax = accBuffor[0],
+//			.ay = accBuffor[1],
+//			.az = accBuffor[2],
+//			.gx = gyroBuffor[0],
+//			.gy = gyroBuffor[1],
+//			.gz = gyroBuffor[2],
+//			.phasea = bufforADCOUput[0],
+//			.phaseb = bufforADCOUput[1],
+//			.phasec = bufforADCOUput[2],
+//
+//
+//
+//	};
+//
+//	HAL_UART_Transmit(&huart2, (uint8_t*)"S", sizeof("S"), 1);
+//	HAL_UART_Transmit(&huart2, (uint8_t*)&DataToSend,sizeof(DataToSend),1000);
+//	HAL_UART_Transmit(&huart2, (uint8_t*)"E", sizeof("E"), 1);
+
+
+	snprintf(buffor,100,"%d;%0.3f;%0.3f;%0.3f;%0.3f;%0.3f;%0.3f;%0.3f;%0.3f;%0.3f\n",SAMPLE,accBuffor[0],accBuffor[1],accBuffor[2],gyroBuffor[0],gyroBuffor[1],gyroBuffor[2],bufforADCOUput[0],bufforADCOUput[1],bufforADCOUput[2]);
+	HAL_UART_Transmit(&huart2, (uint8_t*)buffor	,sizeof(buffor),10000);
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -184,12 +252,24 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//
+//
+//{
+//
+//	//if(htim==&htim10)
+//		///cmplt = 1;
+//
+//			//HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//	;
+//}
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (htim == &htim3)
-	{
-    cmplt = 1;
-	}
+
+	//cmplt = 0;
+	//HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, RESET);
+	memset(buffor,0,sizeof(buffor));
+    cmplt = 0;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -198,13 +278,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   {
     if (huart->Instance->DR == 's')
     {
-      HAL_TIM_Base_Start_IT(&htim3);
-      //HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforsdsd, 1);
+    	HAL_TIM_Base_Start_IT(&htim3);
+      HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforStartStop, 1);
     }
     else if (huart->Instance->DR == 'e')
     {
-      HAL_TIM_Base_Stop_IT(&htim3);
-      //HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforsdsd, 1);
+    	HAL_TIM_Base_Stop_IT(&htim3);
+      HAL_UART_Receive_DMA(&huart2, (uint8_t*)bufforStartStop, 1);
     }
   }
 }

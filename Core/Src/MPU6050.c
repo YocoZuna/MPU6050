@@ -58,11 +58,11 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 	uint8_t temp = 0;
 
 	/* Check if MPU6050 is present under 0x68 slave address */
-	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_WHOAMI, 1, &temp, 1, 1000);
+	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_WHOAMI, 1, &temp, 1, 10);
 	if (temp == 0x68)
 	{
 		/* Restart of the device */
-		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_POWER_MANAGMENT_1, 1,0x00, 1, 1000);
+		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_POWER_MANAGMENT_1, 1,0x00, 1, 10);
 		HAL_Delay(100);
 		/* Initialization of clock and tempr sensor */
 		if (mpu6050->TEMP_ON_OFF == DISABLE)
@@ -77,13 +77,13 @@ void MPU6050_Init(I2C_HandleTypeDef* I2C,MPU6050_Config_TypeDef* mpu6050)
 		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_USER_CONTROL, 1,(uint8_t*) MPU6050_USER_RESET_ALL_SENS, 1, 1000);
 		/* Set lowpass filter ad dpfl */
 		temp = mpu6050->FILTER;
-		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_LOW_PASS_FILTER, 1,&temp, 1, 1000);
+		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_LOW_PASS_FILTER, 1,&temp, 1, 10);
 
 		/* Setting range for accelerometer and gyroscope */
 		temp = mpu6050->ACC_RANGE;
-		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_CONFIG, 1,&temp, 1, 1000);
+		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_CONFIG, 1,&temp, 1, 10);
 		temp = mpu6050->GYRO_RANGE;
-		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_GYRO_CONFIG, 1,&temp, 1, 1000);
+		HAL_I2C_Mem_Write(I2C, MPU6050_DEV_ADDRESS, MPU6050_GYRO_CONFIG, 1,&temp, 1, 10);
 
 
 
@@ -111,7 +111,7 @@ void MPU6050_Get_Gyro_RAW(I2C_HandleTypeDef* I2C,int16_t* gyroBuff)
 {
 
 	uint8_t temp[6];
-	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_GYRO_MEAS, 1, temp, 6, 1000);
+	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_GYRO_MEAS, 1, temp, 6, 10);
 
 	gyroBuff[0] = (int16_t) (temp[0]<<8) | temp[1];
 	gyroBuff[1] = (int16_t) (temp[2]<<8) | temp[3];
@@ -137,7 +137,7 @@ void MPU6050_Get_Acc_RAW(I2C_HandleTypeDef* I2C, int16_t* accBuff)
 {
 
 	uint8_t  temp[6];
-	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, temp, 6, 1000);
+	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_ACC_MEAS, 1, temp, 6, 10);
 
 	accBuff[0] = (int16_t) (temp[0]<<8) | temp[1];
 	accBuff[1] = (int16_t) (temp[2]<<8) | temp[3];
@@ -162,7 +162,7 @@ void MPU6050_Get_Temp_Value(I2C_HandleTypeDef* I2C,int16_t* tempr)
 {
 
 	uint8_t temp[2];
-	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_TEMP, 1, temp, 2, HAL_MAX_DELAY);
+	HAL_I2C_Mem_Read(I2C, MPU6050_DEV_ADDRESS, MPU6050_TEMP, 1, temp, 2, 10);
 	int16_t tempv = 0;
 	tempv = (int16_t) (temp[0]<<8) | temp[1];
 	*tempr  = (tempv/340)+36.53;
